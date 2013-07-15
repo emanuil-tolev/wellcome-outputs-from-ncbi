@@ -39,15 +39,21 @@ def main(argv=None):
     if not argv:
         argv = sys.argv
 
+    resume_at_result_number = 0
+    if len(argv) > 1:
+        if argv[1]:
+            resume_at_result_number = argv[1]
     
     Entrez.email = 'emanuil@cottagelabs.com'
     
     query = "Wellcome[GRNT]"
     
     log.info('Sending this query to NCBI: {0}'.format(query))
+    log.info('Starting from result number: {}'.format(resume_at_result_number))
    
     try:
-        handle = Entrez.esearch(db="pubmed", term=query, retmax=100000)
+        handle = Entrez.esearch(db="pubmed", term=query, retmax=100000,
+                retstart=resume_at_result_number)
     except URLError as e:
         fail(e, '''NCBI query failed due to an URL Error. Are you connected
         to the internet? (It could be that the EUtils API is down or
