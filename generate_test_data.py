@@ -3,12 +3,10 @@ def doi():
 
 def wellcome_ncbi_sim_result():
     import get_wellcome_ncbi_objects as t
-    data = t.OAGPrep()
+    data = t.OAGPrep('test_data.txt')
 
     for i in range(0, 75000):
         data.add(doi().next())
-
-    t.to_file('test_data.txt', data)
 
 def main(argv=None):
     if not argv:
