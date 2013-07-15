@@ -53,16 +53,25 @@ def main(argv=None):
         to the internet? (It could be that the EUtils API is down or
         Biopython is generating the wrong URL.)''')
 
-    record = Entrez.read(handle)
+    record = Entrez.read(handle, validate=False)
     
     log.info('NCBI holds {} records related to this query.'.format(record['Count']))
     
     results = OAGPrep(RESULTS_FILE)
     
     for pmid in record['IdList']:
-        individual_handle = Entrez.efetch(db='pubmed', retmode='xml',
-                id=pmid)
-        individual_record = Entrez.read(individual_handle)
+        try:
+            individual_handle = Entrez.efetch(db='pubmed', retmode='xml',
+                    id=pmid)
+            individual_record = Entrez.read(individual_handle,
+                    validate=False)
+        except ValueError as e:
+            log.warn('''ValueError, Biopython probably couldn\'t parse
+            something or the returned XML was invalid. Skipping PMID {}.
+            Original error {}'''.format(pmid, e))
+        except URLError as e:
+            log.warn('''Networking error. Skipping PMID {}.
+            Original error {}'''.format(pmid, e))
     
         if len(individual_record) > 1:
             log.warn('PMID {}: NCBI response contains multiple items in the individual record list'.format(pmid))
