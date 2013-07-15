@@ -36,3 +36,8 @@ nosetests.xml
 
 # vim
 *.swp
+
+# temp and results files
+dois-1000-per-line.txt
+results_count.txt
+test_data.txt
