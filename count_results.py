@@ -14,4 +14,4 @@ for row in data:
     for item in row:
         count = count + 1
 
-sys.stdout.write(count)
+sys.stdout.write(str(count))
