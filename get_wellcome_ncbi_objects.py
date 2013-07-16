@@ -3,7 +3,7 @@ import logging
 import copy
 
 from urllib2 import URLError
-from httplib import HTTPError
+from httplib import HTTPException
 
 from Bio import Entrez
 
@@ -79,7 +79,7 @@ def main(argv=None):
             log.warn('''ValueError, Biopython probably couldn\'t parse
             something or the returned XML was invalid. Skipping PMID {}.
             Original error {}'''.format(pmid, e))
-        except (URLError, HTTPError) as e:
+        except (URLError, HTTPException) as e:
             log.warn('''Networking error. Skipping PMID {}.
             Original error {}'''.format(pmid, e))
     
