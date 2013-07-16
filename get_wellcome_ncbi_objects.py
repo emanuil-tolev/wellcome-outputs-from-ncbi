@@ -40,9 +40,11 @@ def main(argv=None):
         argv = sys.argv
 
     resume_at_result_number = 0
+    resuming = False
     if len(argv) > 1:
         if argv[1]:
             resume_at_result_number = argv[1]
+            resuming = True
     
     Entrez.email = 'emanuil@cottagelabs.com'
     
@@ -63,7 +65,7 @@ def main(argv=None):
     
     log.info('NCBI holds {} records related to this query.'.format(record['Count']))
     
-    results = OAGPrep(RESULTS_FILE)
+    results = OAGPrep(RESULTS_FILE, resuming=resuming)
     
     for pmid in record['IdList']:
         try:
@@ -100,9 +102,14 @@ class OAGPrep:
     rows = [current_row]
     count = 0
 
-    def __init__(self, results_filename):
+    def __init__(self, results_filename, resuming=False):
         self.results_filename = results_filename
-        to_file(self.results_filename, '')
+        self.overwrite_files = resuming
+
+        if self.overwrite_files:
+            to_file(self.results_filename, '')
+        else:
+            append_file(self.results_filename, "\n")
 
     def add(self, identifier):
         self.count = self.count + 1
@@ -117,9 +124,7 @@ class OAGPrep:
         # add a newline after each set of 1000 items
         if self.count % 1000 == 0:
             append_file(self.results_filename, "\n")
-            
-        to_file('results_count.txt', self.count)
-
+        
         if len(self.current_row) == 1000:
             full_row = copy.copy(self.current_row)
             self.rows.insert(0, full_row)
