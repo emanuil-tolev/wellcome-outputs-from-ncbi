@@ -106,12 +106,12 @@ class OAGPrep:
 
     def __init__(self, results_filename, resuming=False):
         self.results_filename = results_filename
-        self.overwrite_files = resuming
+        self.do_not_overwrite_files = resuming
 
-        if self.overwrite_files:
-            to_file(self.results_filename, '')
-        else:
+        if self.do_not_overwrite_files:
             append_file(self.results_filename, "\n")
+        else:
+            to_file(self.results_filename, '')
 
     def add(self, identifier):
         self.count = self.count + 1
