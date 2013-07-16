@@ -79,9 +79,11 @@ def main(argv=None):
             log.warn('''ValueError, Biopython probably couldn\'t parse
             something or the returned XML was invalid. Skipping PMID {}.
             Original error {}'''.format(pmid, e))
+            continue
         except (URLError, HTTPException) as e:
             log.warn('''Networking error. Skipping PMID {}.
             Original error {}'''.format(pmid, e))
+            continue
     
         if len(individual_record) > 1:
             log.warn('PMID {}: NCBI response contains multiple items in the individual record list'.format(pmid))
