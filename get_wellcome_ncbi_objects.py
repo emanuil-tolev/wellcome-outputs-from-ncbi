@@ -18,6 +18,16 @@ def fail(msg, original_exception):
     log.critical(msg)
     raise original_exception
 
+def warn_skip(msg, pmid):
+    global log
+    log.warn(msg)
+    append_file('skipped_pmids.txt', ',' + pmid)
+
+def warn_problem_ncbi_record(msg, pmid):
+    global log
+    log.warn(msg)
+    append_file('problem_pmids.txt', ',' + pmid)
+
 def to_file(filename, s):
     try:
         with open(filename, 'wb') as f:
@@ -35,7 +45,6 @@ def append_file(filename, s):
         fail(e, '''Could not open results file for appending.
 IOError {}.
 Data to write {}.'''.format(e, s))
-
 
 def main(argv=None):
     if not argv:
@@ -76,30 +85,34 @@ def main(argv=None):
             individual_record = Entrez.read(individual_handle,
                     validate=False)
         except ValueError as e:
-            log.warn('''ValueError, Biopython probably couldn\'t parse
-            something or the returned XML was invalid. Skipping PMID {}.
-            Original error {}'''.format(pmid, e))
+            warn_skip(
+'''ValueError, Biopython probably couldn\'t parse
+something or the returned XML was invalid. Skipping PMID {}.
+Original error {}'''.format(pmid, e),
+                pmid)
             continue
         except (URLError, HTTPException) as e:
-            log.warn('''Networking error. Skipping PMID {}.
-            Original error {}'''.format(pmid, e))
+            warn_skip(
+'''Networking error. Skipping PMID {}.
+Original error {}'''.format(pmid, e),
+                pmid)
             continue
     
         if len(individual_record) > 1:
-            log.warn('PMID {}: NCBI response contains multiple items in the individual record list'.format(pmid))
+            warn_problem_ncbi_record('PMID {}: NCBI response contains multiple items in the individual record list'.format(pmid), pmid)
     
         if 'PubmedData' not in individual_record[0]:
-            log.warn('PMID {}: NCBI response did not contain PubmedData key'.format(pmid))
+            warn_problem_ncbi_record('PMID {}: NCBI response did not contain PubmedData key'.format(pmid), pmid)
     
         if 'ArticleIdList' not in individual_record[0]['PubmedData']:
-            log.warn('PMID {}: NCBI response did not contain the ArticleIdList key in the PubmedData dict'.format(pmid))
+            warn_problem_ncbi_record('PMID {}: NCBI response did not contain the ArticleIdList key in the PubmedData dict'.format(pmid), pmid)
     
         for identifier in individual_record[0]['PubmedData']['ArticleIdList']:
             try:
                 if identifier.attributes['IdType'] == 'doi':
                     results.add(identifier)
             except AttributeError:
-                log.warn('PMID {}: Can\'t add PMID, no associated DOI.'.format(pmid))
+                warn_problem_ncbi_record('PMID {}: Can\'t add PMID, no associated DOI.'.format(pmid), pmid)
 
 class OAGPrep:
     current_row = []
