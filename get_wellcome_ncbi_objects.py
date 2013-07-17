@@ -97,6 +97,10 @@ Original error {}'''.format(pmid, e),
 Original error {}'''.format(pmid, e),
                 pmid)
             continue
+        except Exception as e:
+            warn_skip('''Some other error while fetching individual record for PMID {}.
+Original error: "{}"'''.format(pmid, e),
+                pmid)
     
         if len(individual_record) > 1:
             warn_problem_ncbi_record('PMID {}: NCBI response contains multiple items in the individual record list'.format(pmid), pmid)
@@ -111,8 +115,13 @@ Original error {}'''.format(pmid, e),
             try:
                 if identifier.attributes['IdType'] == 'doi':
                     results.add(identifier)
+                    log.info('Did another one! {}'.format(pmid))
             except AttributeError:
                 warn_problem_ncbi_record('PMID {}: Can\'t add PMID, no associated DOI.'.format(pmid), pmid)
+            except Exception as e:
+                warn_skip('''Some other error while recording result from PMID {}.
+Original error: "{}"'''.format(pmid, e),
+                    pmid)
 
 class OAGPrep:
     current_row = []
