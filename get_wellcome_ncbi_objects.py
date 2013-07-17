@@ -129,12 +129,12 @@ class OAGPrep:
         if self.count % 1000 == 0:
             append_file(self.results_filename, "\n")
         
-        if len(self.current_row) == 1000:
-            full_row = copy.copy(self.current_row)
-            self.rows.insert(0, full_row)
-            self.current_row = []
+        #if len(self.current_row) == 1000:
+        #    full_row = copy.copy(self.current_row)
+        #    self.rows.insert(0, full_row)
+        #    self.current_row = []
 
-        self.current_row.append(identifier)
+        #self.current_row.append(identifier)
 
 
     def __str__(self):
