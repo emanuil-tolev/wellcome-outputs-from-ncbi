@@ -13,7 +13,7 @@ LOG_FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 log = logging.getLogger(__name__)
 
-def fail(original_exception, msg):
+def fail(msg, original_exception):
     global log
     log.critical(msg)
     raise original_exception
@@ -26,25 +26,15 @@ def warn_skip(msg, pmid):
 def warn_problem_ncbi_record(msg, pmid):
     global log
     log.warn(msg)
-    append_file('problem_pmids.txt', ',' + pmid)
+    append_file('cant_get_doi_pmids.txt', ',' + pmid)
 
 def to_file(filename, s):
-    try:
-        with open(filename, 'wb') as f:
-            f.write(str(s))
-    except IOError as e:
-        fail(e, '''Could not open results file for writing.
-IOError {}.
-Data to write {}.'''.format(e, s))
+    with open(filename, 'wb') as f:
+        f.write(str(s))
 
 def append_file(filename, s):
-    try:
-        with open(filename, 'ab') as f:
-            f.write(str(s))
-    except IOError as e:
-        fail(e, '''Could not open results file for appending.
-IOError {}.
-Data to write {}.'''.format(e, s))
+    with open(filename, 'ab') as f:
+        f.write(str(s))
 
 def main(argv=None):
     if not argv:
@@ -68,9 +58,9 @@ def main(argv=None):
         handle = Entrez.esearch(db="pubmed", term=query, retmax=100000,
                 retstart=resume_at_result_number)
     except URLError as e:
-        fail(e, '''NCBI query failed due to an URL Error. Are you connected
+        fail('''NCBI query failed due to an URL Error. Are you connected
         to the internet? (It could be that the EUtils API is down or
-        Biopython is generating the wrong URL.)''')
+        Biopython is generating the wrong URL.)''', e)
 
     record = Entrez.read(handle, validate=False)
     
@@ -88,19 +78,20 @@ def main(argv=None):
             warn_skip(
 '''ValueError, Biopython probably couldn\'t parse
 something or the returned XML was invalid. Skipping PMID {}.
-Original error {}'''.format(pmid, e),
+    Original error {}'''.format(pmid, e),
                 pmid)
             continue
         except (URLError, HTTPException) as e:
             warn_skip(
 '''Networking error. Skipping PMID {}.
-Original error {}'''.format(pmid, e),
+    Original error {}'''.format(pmid, e),
                 pmid)
             continue
         except Exception as e:
-            warn_skip('''Some other error while fetching individual record for PMID {}.
-Original error: "{}"'''.format(pmid, e),
+            warn_skip('''Some other error while fetching individual record for PMID {}. Skipping it.
+    Original error: "{}"'''.format(pmid, e),
                 pmid)
+            continue
     
         if len(individual_record) > 1:
             warn_problem_ncbi_record('PMID {}: NCBI response contains multiple items in the individual record list'.format(pmid), pmid)
@@ -120,7 +111,7 @@ Original error: "{}"'''.format(pmid, e),
                 warn_problem_ncbi_record('PMID {}: Can\'t add PMID, no associated DOI.'.format(pmid), pmid)
             except Exception as e:
                 warn_skip('''Some other error while recording result from PMID {}.
-Original error: "{}"'''.format(pmid, e),
+    Original error: "{}"'''.format(pmid, e),
                     pmid)
 
 class OAGPrep:
