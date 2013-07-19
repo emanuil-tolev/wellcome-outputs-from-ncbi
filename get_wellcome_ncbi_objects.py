@@ -13,7 +13,7 @@ LOG_FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 log = logging.getLogger(__name__)
 
-def fail(msg, original_exception):
+def fail(original_exception, msg):
     global log
     log.critical(msg)
     raise original_exception
