@@ -1,17 +1,21 @@
 import sys
 
-with open(sys.argv[1], 'rb') as f:
-    content = f.read()
+def count_results(filename):
+    with open(filename, 'rb') as f:
+        content = f.read()
+    
+    content = content.splitlines()
+    
+    data = []
+    for row in content:
+        data.append(row.split(','))
+    
+    count = 0
+    for row in data:
+        for item in row:
+            count = count + 1
 
-content = content.splitlines()
+    return count
 
-data = []
-for row in content:
-    data.append(row.split(','))
-
-count = 0
-for row in data:
-    for item in row:
-        count = count + 1
-
-sys.stdout.write(str(count))
+if __name__ == '__main__':
+    sys.stdout.write(str(count_results(sys.argv[1])))

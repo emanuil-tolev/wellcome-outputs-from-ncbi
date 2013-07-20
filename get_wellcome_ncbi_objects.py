@@ -42,9 +42,11 @@ def main(argv=None):
 
     resume_at_result_number = 0
     resuming = False
+
     if len(argv) > 1:
-        if argv[1]:
-            resume_at_result_number = argv[1]
+        if argv[1] == '--resume':
+            from count_results import count_results
+            resume_at_result_number = count_results(RESULTS_FILE)
             resuming = True
     
     Entrez.email = 'emanuil@cottagelabs.com'
